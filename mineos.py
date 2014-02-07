@@ -10,6 +10,7 @@ __version__ = "0.6.0"
 __email__ = "wdchromium@gmail.com"
 
 import os
+import fnmatch
 from conf_reader import config_file
 from collections import namedtuple
 from distutils.spawn import find_executable
@@ -567,8 +568,25 @@ class mc(object):
                 elif tarfile.is_tarfile(new_file_path):
                     with tarfile.open(new_file_path, mode='r') as tarchive:
                         tarchive.extractall(os.path.join(self.env['pwd'], profile))
+                
+		new_run_as = os.path.join(os.path.join(self.env['pwd'], profile, profile_dict['run_as']))
 
-                new_run_as = os.path.join(os.path.join(self.env['pwd'], profile, profile_dict['run_as']))
+                # If there is no exact match then fall back to fnmatch based wildcard matches
+                if not os.path.isfile(new_run_as):
+                    files = [f for f in os.listdir(os.path.join(os.path.join(self.env['pwd'], profile))) if os.path.isfile(os.path.join(os.path.join(self.env['pwd'], profile, f)))]
+                    
+                    import cherrypy
+                    import logging
+                    cherrypy.log(os.path.join(os.path.join(self.env['pwd'], profile)), context='', severity=logging.ERROR, traceback=False)
+                    cherrypy.log(str(files), context='', severity=logging.ERROR, traceback=False)
+                    matches = fnmatch.filter(files, profile_dict['run_as'])
+                    if len(matches) == 0:
+			raise RuntimeWarning('Server jar not found')
+                    new_run_as = os.path.join(os.path.join(self.env['pwd'], profile, matches[0]))
+
+                    with self.profile_config as pc:
+                        pc[profile:'run_as'] = matches[0]
+
                 with self.profile_config as pc:
                     pc[profile:'save_as_md5'] = new_file_md5
                     pc[profile:'run_as_md5'] = self._md5sum(new_run_as)
@@ -685,7 +703,7 @@ class mc(object):
         """Checks filename against whitelist-safe characters"""
         from string import ascii_letters, digits
         
-        valid_chars = set('%s%s-_.' % (ascii_letters, digits))
+        valid_chars = set('%s%s-_.^*?[]' % (ascii_letters, digits))
 
         if not filename:
             raise ValueError('Filename is empty')

@@ -91,11 +91,12 @@ class ViewModel(object):
                 profile_info = opt_dict
                 profile_info['profile'] = profile
 
-                if 'url' in profile_info:
-                    profile_info['version'] = mc.server_version(run_as, profile_info['url'])
-                else:
-                    profile_info['url'] = ''
-                    profile_info['version'] = ''
+                if not 'version' in profile_info or profile_info['version'] == '':
+		    if 'url' in profile_info:
+                        profile_info['version'] = mc.server_version(run_as, profile_info['url'])
+                    else:
+                        profile_info['url'] = ''
+                        profile_info['version'] = ''
                 
                 try:
                     profile_info['save_as_md5'] = mc._md5sum(save_as)
@@ -161,6 +162,7 @@ class ViewModel(object):
         from grp import getgrall, getgrgid
         from pwd import getpwnam
         from stock_profiles import STOCK_PROFILES
+        from ftb_profiles import FTB_PROFILES
         
         kb_free = dict(entries('', 'meminfo'))['MemFree']
         mb_free = str(round(float(kb_free.split()[0])/1000, 2))
@@ -189,6 +191,7 @@ class ViewModel(object):
             'pc_group': pc_group,
             'git_hash': git_hash(os.path.dirname(os.path.abspath(__file__))),
             'stock_profiles': STOCK_PROFILES.keys(),
+            'ftb_profiles': FTB_PROFILES.keys(),
             'base_directory': self.base_directory,
             })
 
@@ -282,6 +285,12 @@ class Root(object):
                 from stock_profiles import STOCK_PROFILES
                 
                 profile = STOCK_PROFILES[args['profile']]
+                mc('throwaway', None, self.base_directory).define_profile(profile)
+                retval = '%s profile created' % profile['name']
+            elif command == 'ftb_profile':
+                from ftb_profiles import FTB_PROFILES
+                
+                profile = FTB_PROFILES[args['profile']]
                 mc('throwaway', None, self.base_directory).define_profile(profile)
                 retval = '%s profile created' % profile['name']
             elif command == 'modify_profile':

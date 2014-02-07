@@ -802,6 +802,12 @@ Is the information correct? [Y/n]
                                         <li><a data-required="profile" data-cmd="stock_profile" data-bind="click: $root.command, attr: {'data-profile': $data}, text: $data"></a></li>
                                     </ul>
                                 </div>
+                              	<div class="btn-group">
+                                    <button class="btn dropdown-toggle" data-toggle="dropdown">Create FTB Profile <span class="caret"></span></button>
+                                    <ul class="dropdown-menu" data-bind="foreach: $root.dashboard.ftb_profiles">
+                                        <li><a data-required="profile" data-cmd="ftb_profile" data-bind="click: $root.command, attr: {'data-profile': $data}, text: $data"></a></li>
+                                    </ul>
+                                </div>
                               </td>
                             </tr>
                           </tfoot>

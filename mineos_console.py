@@ -102,6 +102,9 @@ if __name__=="__main__":
         elif args.cmd == 'stock_profile':
             from stock_profiles import STOCK_PROFILES
             mc(**init_args).define_profile(STOCK_PROFILES[arguments[0]])
+        elif args.cmd == 'ftb_profile':
+            from ftb_profiles import FTB_PROFILES
+            mc(**init_args).define_profile(FTB_PROFILES[arguments[0]])
         elif args.cmd == 'define_profile':
             from collections import OrderedDict
             profile = OrderedDict([(k,None) for k in ('name', 'type', 'url',
